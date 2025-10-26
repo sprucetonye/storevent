@@ -87,7 +87,12 @@ If you're looking for a reliable, passionate, and experienced software engineer,
 
 
 ### SnapShots
-![StoreVent images]("https://drive.google.com/file/d/1ecIQUYhgYHBedFoVPx1EKcV4RmQAxuyv/view?usp=sharing"=400x400)
-![StoreVent Add inventory]("https://drive.google.com/file/d/1HZHCWGZ5MmQNhsToX_OxW_lqYnVAdV8A/view?usp=sharing"=400x400)
-![StoreVent Updating Products]("https://drive.google.com/file/d/18QX2-W7xAIjas1Zo-pQG3hzNpqi3Lcgv/view?usp=sharing"=400x400)
+<img src="https://i.postimg.cc/7h0xrTgG/Screenshot-from-2025-10-25-17-52-06.png" width="400" height="800" alt="StoreVent Updating Products">
+
+### --------------------------------------------------------------------
+
+<img src="https://i.postimg.cc/J0Z1CBbs/Screenshot-from-2025-10-25-17-52-20.png" width="400" height="800" alt="StoreVent Updating Products">
+
+##  --------------------------------------------------------------------
+<img src="https://i.postimg.cc/mkCbWFQc/Screenshot-from-2025-10-25-17-52-28.png" width="400" height="800" alt="StoreVent Updating Products">
 
