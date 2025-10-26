@@ -7,12 +7,18 @@ plugins {
 
 android {
     namespace = "com.example.onielsstore"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = flutter.compileSdkVersion 33 // Ensure this 33 or higher
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+
+dependencies {
+    
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4' // Add this line
     }
 
     kotlinOptions {
