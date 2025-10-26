@@ -46,5 +46,6 @@ dependencies {
 // --- FIX END ---
 
 flutter {
-    source = file("../..")
+    // FIX: Removed 'file(...)' as the Kotlin DSL expects a String path for 'source'
+    source = "../.."
 }
