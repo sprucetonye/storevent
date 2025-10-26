@@ -1,18 +1,17 @@
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    val compileSdkVersion: Int by rootProject.extra
-    compileSdk = compileSdkVersion
-
-    namespace = "YOUR_PACKAGE_NAME" // Replace with your actual package name
+    namespace = "com.example.onielsstore"
+    compileSdk = 33
 
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -24,12 +23,9 @@ android {
     }
 
     defaultConfig {
-        val minSdkVersion: Int by rootProject.extra
-        val targetSdkVersion: Int by rootProject.extra
-        
-        applicationId = "YOUR_PACKAGE_NAME" // Replace with your actual package name
-        minSdk = minSdkVersion
-        targetSdk = targetSdkVersion
+        applicationId = "com.example.onielsstore"
+        minSdk = 21
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
     }
@@ -37,8 +33,13 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
+}
+
+flutter {
+    source = "../.."
 }
 
 dependencies {
