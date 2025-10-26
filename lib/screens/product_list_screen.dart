@@ -7,7 +7,6 @@ import 'package:onielsstore/models/product_model.dart';
 import 'package:onielsstore/screens/add_product_screen.dart';
 import 'package:onielsstore/screens/product_detail_screen.dart';
 import 'package:onielsstore/utils/notifications_utils.dart';
-import 'package:onielsstore/utils/csv_export.dart';
 
 class ProductListScreen extends StatelessWidget {
   final TextEditingController _searchController = TextEditingController();

@@ -5,6 +5,8 @@ import 'package:onielsstore/models/product_model.dart';
 import 'package:onielsstore/screens/product_list_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     final box = Hive.box<Product>('products');
