@@ -7,12 +7,13 @@ plugins {
 
 android {
     namespace = "com.example.flutter_quiz_app" // Replace with your actual package name
-    compileSdk = 34 // Use a modern SDK version (e.g., 34 or 35)
+    // FIX 1: Increased compileSdk to 36 to satisfy plugin requirements (e.g., image_picker_android, path_provider_android).
+    compileSdk = 36 
 
     defaultConfig {
         applicationId = "com.example.flutter_quiz_app" // Replace with your actual package name
         minSdk = 21 // Keep minimum SDK version consistent
-        targetSdk = 34
+        targetSdk = 34 // targetSdk can often remain lower than compileSdk
         versionCode = flutter.versionCode.toInt()
         versionName = flutter.versionName
     }
@@ -40,8 +41,8 @@ android {
 
 // --- FIX START: Add the desugaring dependency ---
 dependencies {
-    // This library provides the desugared Java 8+ APIs
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    // FIX 2: Updated desugar_jdk_libs version to 2.1.4 to satisfy flutter_local_notifications dependency.
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 // --- FIX END ---
 
