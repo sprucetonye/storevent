@@ -1,10 +1,4 @@
 buildscript {
-    ext {
-        val compileSdkVersion = 33
-        val minSdkVersion = 21
-        val targetSdkVersion = 33
-    }
-
     repositories {
         google()
         mavenCentral()
