@@ -40,7 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: breach-android-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/apk/release/app-release.apk
           retention-days: 30
 
       - name: Create release info
