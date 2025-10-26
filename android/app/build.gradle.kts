@@ -1,43 +1,50 @@
 plugins {
+    // Apply the Flutter plugin to the application build
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    kotlin("android")
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
-    namespace = "com.example.trivo_fun"
-    compileSdk = 34
-    ndkVersion = "25.1.8937393" // Use your specific NDK version
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-        coreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
-    }
+    namespace = "com.example.flutter_quiz_app" // Replace with your actual package name
+    compileSdk = 34 // Use a modern SDK version (e.g., 34 or 35)
 
     defaultConfig {
-        applicationId = "com.example.trivo_fun"
-        minSdk = 21
+        applicationId = "com.example.flutter_quiz_app" // Replace with your actual package name
+        minSdk = 21 // Keep minimum SDK version consistent
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = flutter.versionCode.toInt()
+        versionName = flutter.versionName
     }
 
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("debug")
+    // --- FIX START: Correct setup for Java 17 and Desugaring ---
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17 // Set to Java 17
+        targetCompatibility = JavaVersion.VERSION_17 // Set to Java 17
+        
+        // This is where desugaring is enabled within the compileOptions block
+        isCoreLibraryDesugaringEnabled = true 
+    }
+    // --- FIX END ---
+    
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    sourceSets {
+        getByName("main") {
+            java.srcDirs("src/main/kotlin")
         }
     }
 }
 
-flutter {
-    source = "../.."
-}
-
+// --- FIX START: Add the desugaring dependency ---
 dependencies {
+    // This library provides the desugared Java 8+ APIs
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+}
+// --- FIX END ---
+
+flutter {
+    source = file("../..")
 }
