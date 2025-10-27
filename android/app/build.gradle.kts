@@ -21,11 +21,11 @@ android {
 
     defaultConfig {
         applicationId = "com.example.onielsstore"
-        minSdk = 21
+        minSdk = flutter.minSdkVersion
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
-        
+        compileSdkVersion (36)
         // Add this for multi-dex support (often needed with desugaring)
         multiDexEnabled = true
     }
@@ -45,7 +45,7 @@ flutter {
 
 dependencies {
     // Make sure this is included for core library desugaring
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     
     // Also add multi-dex support if needed
     implementation("androidx.multidex:multidex:2.0.1")
