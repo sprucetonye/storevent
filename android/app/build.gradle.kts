@@ -4,15 +4,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Read key.properties file
-val keystoreProperties = java.util.Properties()
-val keystorePropertiesFile = rootProject.file("key.properties")
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
-}
-
 android {
-    namespace = "com.example.trivo_fun"
+    namespace = "com.example.onielsstore"
     compileSdk = 34
     
     compileOptions {
@@ -26,25 +19,42 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.trivo_fun"
+        applicationId = "com.example.onielsstore"
         minSdk = 21
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
     }
 
+    // Add signing configs block
     signingConfigs {
         create("release") {
-            keyAlias = keystoreProperties.getProperty("keyAlias")
-            keyPassword = keystoreProperties.getProperty("keyPassword")
-            storeFile = file(keystoreProperties.getProperty("storeFile"))
-            storePassword = keystoreProperties.getProperty("storePassword")
+            storeFile = file("keystore.jks") // or your keystore file path
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: ""
+            keyAlias = System.getenv("KEY_ALIAS") ?: ""
+            keyPassword = System.getenv("KEY_PASSWORD") ?: ""
+        }
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
     }
 
     buildTypes {
         release {
+            // Use the release signing config
             signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
