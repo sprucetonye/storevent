@@ -8,26 +8,38 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationsManager {
   static final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  static void initialize(){
-    const AndroidInitializationSettings androidInitializationSettings = AndroidInitializationSettings("@mipmap/ic_launcher");
-    const InitializationSettings initializationSettings = InitializationSettings(android: androidInitializationSettings);
+  static void initialize() {
+    const androidSettings = AndroidInitializationSettings("@mipmap/ic_launcher");
+    const linuxSettings = LinuxInitializationSettings(defaultActionName: 'Open notification');
+    const initSettings = InitializationSettings(
+      android: androidSettings,
+      linux: linuxSettings,
+    );
 
-    //
-
-    _flutterLocalNotificationsPlugin.initialize(initializationSettings, onDidReceiveNotificationResponse: (notificationResponse){
-      //
-    },
+    _flutterLocalNotificationsPlugin.initialize(
+      initSettings,
+      onDidReceiveNotificationResponse: (notificationResponse) {
+        // Handle notification response
+      },
     );
   }
   static void showLowStockNotification(String productName) async {
-    const AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+    const androidDetails = AndroidNotificationDetails(
       "low_stock_channel",
-      "low Stock",
+      "Low Stock",
       importance: Importance.high,
       ticker: "Low Stock",
-      
-      );
-      const NotificationDetails notificationDetails = NotificationDetails(android: androidNotificationDetails);
+    );
+    
+    const linuxDetails = LinuxNotificationDetails(
+      urgency: LinuxNotificationUrgency.normal,
+      category: LinuxNotificationCategory.im,
+    );
+    
+    const notificationDetails = NotificationDetails(
+      android: androidDetails,
+      linux: linuxDetails,
+    );
       // 
       await _flutterLocalNotificationsPlugin.show(
         0, 

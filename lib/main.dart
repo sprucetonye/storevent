@@ -8,9 +8,14 @@ import 'package:onielsstore/screens/dashboard_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
+  
+  // Register the Product adapter
+  if (!Hive.isAdapterRegistered(0)) {
+    Hive.registerAdapter(ProductAdapter());
+  }
+  
   await Hive.openBox<Product>('products');
   NotificationsManager.initialize();
-  Hive.initFlutter();
   runApp(const MyApp());
 }
 

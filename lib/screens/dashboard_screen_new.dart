@@ -3,8 +3,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'dart:io';
 
 import 'package:onielsstore/models/product_model.dart';
-import 'package:onielsstore/screens/add_product_screen.dart';
 import 'package:onielsstore/screens/product_list_screen.dart';
+import 'package:onielsstore/screens/add_product_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -19,36 +19,6 @@ class DashboardScreen extends StatelessWidget {
           "Welcome to StoreVent",
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.delete_sweep, color: Colors.white),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Clear All Data'),
-                  content: const Text('Are you sure you want to delete all products? This cannot be undone.'),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
-                    ),
-                    TextButton(
-                      onPressed: () async {
-                        await Hive.box<Product>('products').clear();
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('All products cleared')),
-                        );
-                      },
-                      child: const Text('Clear All', style: TextStyle(color: Colors.red)),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: ValueListenableBuilder<Box<Product>>(
         valueListenable: Hive.box<Product>('products').listenable(),
@@ -140,43 +110,51 @@ class DashboardScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          title: Text(product.name),
-                          subtitle: Text(
-                            "Qty: ${product.quantity} - \$${(double.tryParse(product.price) ?? 0.0).toStringAsFixed(2)}",
-                          ),
-                          leading: product.imagePath.isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Image.file(
-                                    File(product.imagePath),
+                  if (products.isEmpty)
+                    const Center(
+                      child: Text(
+                        "No products added yet",
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    )
+                  else
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: products.length,
+                      itemBuilder: (context, index) {
+                        final product = products[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            title: Text(product.name),
+                            subtitle: Text(
+                              "Qty: ${product.quantity} - \$${(double.tryParse(product.price) ?? 0.0).toStringAsFixed(2)}",
+                            ),
+                            leading: product.imagePath.isNotEmpty
+                                ? ClipRRect(
+                                    borderRadius: BorderRadius.circular(4),
+                                    child: Image.file(
+                                      File(product.imagePath),
+                                      width: 50,
+                                      height: 50,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  )
+                                : Container(
                                     width: 50,
                                     height: 50,
-                                    fit: BoxFit.cover,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey.shade200,
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Icon(Icons.image_not_supported,
+                                        color: Colors.grey),
                                   ),
-                                )
-                              : Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.grey.shade200,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Icon(Icons.image_not_supported,
-                                      color: Colors.grey),
-                                ),
-                        ),
-                      );
-                    },
-                  ),
+                          ),
+                        );
+                      },
+                    ),
 
                   // Low Stock Warning
                   if (lowStockProducts.isNotEmpty) ...[
@@ -189,10 +167,10 @@ class DashboardScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Row(
-                              children: [
-                                const Icon(Icons.warning, color: Colors.red),
-                                const SizedBox(width: 8),
-                                const Text(
+                              children: const [
+                                Icon(Icons.warning, color: Colors.red),
+                                SizedBox(width: 8),
+                                Text(
                                   "Low Stock Alert",
                                   style: TextStyle(
                                     fontSize: 18,
@@ -210,22 +188,6 @@ class DashboardScreen extends StatelessWidget {
                                     style: TextStyle(color: Colors.red.shade900),
                                   ),
                                 )),
-                            const SizedBox(height: 12),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductListScreen(),
-                                  ),
-                                );
-                              },
-                              icon: const Icon(Icons.list),
-                              label: const Text('Go to Product List'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red.shade400,
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -243,12 +205,10 @@ class DashboardScreen extends StatelessWidget {
             context,
             MaterialPageRoute(builder: (context) => const AddProductScreen()),
           );
-          if (result == true) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Product saved successfully!')),
-              );
-            }
+          if (result == true && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Product saved successfully!')),
+            );
           }
         },
         backgroundColor: Colors.purpleAccent,
