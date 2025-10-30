@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:hive/hive.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -37,19 +38,97 @@ class _AddProductScreenState extends State<AddProductScreen> {
       _imagePath = widget.existingProduct!.imagePath;
     }
   }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedFile = await ImagePicker().pickImage(
+        source: source,
+        imageQuality: 70,
+      );
+
+      if (pickedFile != null) {
+        File imageFile = File(pickedFile.path);
+        Uint8List? compressedData;
+
+        if (Platform.isLinux) {
+          // On Linux, read the file and compress the bytes directly
+          final bytes = await imageFile.readAsBytes();
+          compressedData = await FlutterImageCompress.compressWithList(
+            bytes,
+            quality: 70,
+            minWidth: 800,
+            minHeight: 800,
+          );
+        } else {
+          // On other platforms, use compressWithFile
+          compressedData = await FlutterImageCompress.compressWithFile(
+            pickedFile.path,
+            quality: 70,
+            minWidth: 800,
+            minHeight: 800,
+          );
+        }
+
+        if (compressedData != null) {
+          final directory = await getApplicationDocumentsDirectory();
+          final imagePath = "${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg";
+          final file = File(imagePath);
+          await file.writeAsBytes(compressedData);
+          setState(() {
+            _imagePath = imagePath;
+          });
+        }
+      }
+    } on UnimplementedError {
+      // Handle unimplemented error for unsupported platforms
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Not Supported'),
+            content: Text('Image picking is not fully supported on this platform (${Platform.operatingSystem}). Please try on a mobile device or use a different method to add images.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error dialog if image picking fails
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) => AlertDialog(
+            title: const Text('Error'),
+            content: Text('Failed to pick image: $e'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('OK'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.existingProduct != null ? "Edit Product" : "Add Product"),
       ),
-      body: Padding(padding: 
+      body: Padding(padding:
       EdgeInsets.all(16.0),
       child: Form(
         key: _formKey,
-        child: Column(
-          children: [
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
             TextFormField(
               controller: _nameController,
               decoration: InputDecoration(
@@ -68,16 +147,21 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 labelText: "Quantity"
               ),
               keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               validator: (value){
                 if (value == null || value.isEmpty){
                   return "Please enter a quantity";
                 }
-                if(int.parse(value) < 0){
+                final qty = int.tryParse(value);
+                if (qty == null) {
+                  return "Please enter a valid number for quantity";
+                }
+                if(qty < 0){
                   return "Quantity cannot be negative";
                 }
                 return null;
               },
-        
+
             ),
             TextFormField(
               controller: _priceController,
@@ -85,106 +169,69 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 labelText: "Price"
               ),
               keyboardType: TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))],
               validator: (value) {
                 if(value == null || value.isEmpty){
-        return "Please enter a price";
+                  return "Please enter a price";
                 }
-                if (double.parse(value)< 0){
-                  return "Price cannot be";
+                final price = double.tryParse(value);
+                if (price == null) {
+                  return "Please enter a valid number for price";
+                }
+                if (price < 0){
+                  return "Price cannot be negative";
                 }
                 return null;
               },
               ),
-              SizedBox(height: 20,),
-             ElevatedButton.icon(
-          onPressed: () async {
-            final ImageSource? source = await showDialog<ImageSource>(
-              context: context,
-              builder: (BuildContext context) => AlertDialog(
-                title: const Text('Select Image Source'),
-                actions: <Widget>[
-                  if (!Platform.isLinux) // Camera option not available on Linux
-                    TextButton(
-                      child: const Text('Camera'),
-                      onPressed: () => Navigator.pop(context, ImageSource.camera),
+              const SizedBox(height: 20.0),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        if (Platform.isLinux) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Camera not available on Linux')),
+                          );
+                          return;
+                        }
+                        await _pickImage(ImageSource.camera);
+                      },
+                      icon: Icon(Icons.camera_alt),
+                      label: Text("Camera"),
                     ),
-                  TextButton(
-                    child: const Text('Gallery'),
-                    onPressed: () => Navigator.pop(context, ImageSource.gallery),
+                  ),
+                  const SizedBox(width: 10.0),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        await _pickImage(ImageSource.gallery);
+                      },
+                      icon: Icon(Icons.photo_library),
+                      label: Text("Gallery"),
+                    ),
                   ),
                 ],
               ),
-            );
-            
-            if (source != null) {
-              try {
-                final pickedFile = await ImagePicker().pickImage(
-                  source: source,
-                  imageQuality: 70,
-                );
-                
-                if (pickedFile != null) {
-                  File imageFile = File(pickedFile.path);
-                  Uint8List? compressedData;
-                  
-                  if (Platform.isLinux) {
-                    // On Linux, read the file and compress the bytes directly
-                    final bytes = await imageFile.readAsBytes();
-                    compressedData = await FlutterImageCompress.compressWithList(
-                      bytes,
-                      quality: 70,
-                      minWidth: 800,
-                      minHeight: 800,
-                    );
-                  } else {
-                    // On other platforms, use compressWithFile
-                    compressedData = await FlutterImageCompress.compressWithFile(
-                      pickedFile.path,
-                      quality: 70,
-                      minWidth: 800,
-                      minHeight: 800,
-                    );
-                  }
-                  
-                  if (compressedData != null) {
-                    final directory = await getApplicationDocumentsDirectory();
-                    final imagePath = "${directory.path}/${DateTime.now().millisecondsSinceEpoch}.jpg";
-                    final file = File(imagePath);
-                    await file.writeAsBytes(compressedData);
-                    setState(() {
-                      _imagePath = imagePath;
-                    });
-                  }
-                }
-              } catch (e) {
-                // Show error dialog if image picking fails
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: const Text('Error'),
-                    content: Text('Failed to pick image: $e'),
-                    actions: <Widget>[
-                      TextButton(
-                        child: const Text('OK'),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                    ],
-                  ),
-                );
-              }
-            }
-          },
-          icon: Icon(Icons.add_photo_alternate),
-          label: Text("Add Image"),
-        ),
-        SizedBox(height: 20,),
-        if(_imagePath != null)
-        Image.file(File(_imagePath!)),
-        SizedBox(height: 20),
+        const SizedBox(height: 20.0),
+        if (_imagePath != null)
+          Container(
+            height: 200,
+            width: 200,
+            child: Image.file(File(_imagePath!), fit: BoxFit.contain),
+          ),
+        const SizedBox(height: 20.0),
         ElevatedButton(
   onPressed: () async {
     if (_formKey.currentState != null && _formKey.currentState!.validate()) {
-      print('Form is valid');
+      if (_imagePath == null && (widget.existingProduct == null || widget.existingProduct!.imagePath.isEmpty)) {
+        // Show error if no image is selected for new product
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Please add an image for the product')),
+        );
+        return;
+      }
       final product = Product(
         name: _nameController.text,
         quantity: _quantityController.text,
@@ -193,7 +240,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
           // or fall back to an empty string to avoid null errors.
           imagePath: _imagePath ?? widget.existingProduct?.imagePath ?? '',
       );
-      print('Product: $product');
       final box = Hive.box<Product>('products');
       if (widget.existingProduct != null) {
         // Update the existing product
@@ -204,13 +250,17 @@ class _AddProductScreenState extends State<AddProductScreen> {
       // Pop with true to indicate successful save
       Navigator.pop(context, true);
     } else {
-      print('Form is not valid');
+      // Form is not valid, show error
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fix the errors in the form')),
+      );
     }
   },
   child: Text(widget.existingProduct != null ? "Update Product" : "Save Product"),
 ),
           ],
         ),
+      ),
       ),
       ),
     );
